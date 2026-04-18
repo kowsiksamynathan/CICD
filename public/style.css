@@ -1,0 +1,788 @@
+/* ─── Reset & Base ─── */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg: #eef1f6;
+  --surface: #ffffff;
+  --surface-alt: #f5f7fa;
+  --border: #dce1e8;
+  --border-focus: #1b6acb;
+  --text: #1f2937;
+  --text-secondary: #5c6678;
+  --text-muted: #8e97a8;
+  --zoho-blue: #1b6acb;
+  --zoho-blue-dark: #155aad;
+  --zoho-blue-light: rgba(27, 106, 203, 0.08);
+  --zoho-blue-glow: rgba(27, 106, 203, 0.2);
+  --zoho-teal: #00897b;
+  --zoho-teal-light: rgba(0, 137, 123, 0.08);
+  --zoho-red: #e53935;
+  --zoho-red-light: rgba(229, 57, 53, 0.07);
+  --zoho-orange: #f4841e;
+  --zoho-orange-light: rgba(244, 132, 30, 0.08);
+  --zoho-green: #2e7d32;
+  --zoho-green-light: rgba(46, 125, 50, 0.08);
+  --canvas-gradient: linear-gradient(135deg, #1b6acb 0%, #00897b 100%);
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 36px rgba(0, 0, 0, 0.12);
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 0;
+  line-height: 1.5;
+}
+
+/* ─── Container ─── */
+.container {
+  width: 100%;
+  max-width: 660px;
+  padding: 0 20px 40px;
+}
+
+/* ─── Header ─── */
+header {
+  text-align: center;
+  padding: 32px 0 28px;
+  margin-bottom: 0;
+  background: var(--canvas-gradient);
+  margin: 0 -20px 24px;
+  padding: 36px 20px 30px;
+  border-radius: 0 0 20px 20px;
+}
+
+header h1 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 400;
+}
+
+/* ─── Header User Area ─── */
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.user-name {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.logout-btn {
+  padding: 5px 14px;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* ─── Repo Connection Bar ─── */
+.repo-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.repo-bar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.repo-bar-header label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+
+.status-badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.status-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-badge.disconnected {
+  background: var(--zoho-red-light);
+  color: var(--zoho-red);
+}
+.status-badge.disconnected::before {
+  background: var(--zoho-red);
+}
+
+.status-badge.connected {
+  background: var(--zoho-green-light);
+  color: var(--zoho-green);
+}
+.status-badge.connected::before {
+  background: var(--zoho-green);
+}
+
+.status-badge.connecting {
+  background: var(--zoho-orange-light);
+  color: var(--zoho-orange);
+}
+.status-badge.connecting::before {
+  background: var(--zoho-orange);
+  animation: pulse 1s ease infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.repo-bar-row {
+  display: flex;
+  gap: 8px;
+}
+
+.repo-bar-row input,
+.repo-bar-row select {
+  flex: 1;
+  padding: 9px 14px;
+  border-radius: var(--radius);
+  border: 1.5px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text);
+  font-size: 0.86rem;
+  font-family: var(--mono);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.repo-bar-row input:focus,
+.repo-bar-row select:focus {
+  outline: none;
+  border-color: var(--zoho-blue);
+  box-shadow: 0 0 0 3px var(--zoho-blue-glow);
+}
+
+.repo-bar-row input:disabled,
+.repo-bar-row select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.repo-bar-row select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%235c6678' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+.btn-connect {
+  background: var(--zoho-blue);
+  color: #fff;
+  white-space: nowrap;
+  min-width: 96px;
+  width: auto;
+  font-weight: 600;
+}
+
+.btn-connect:hover:not(:disabled) {
+  background: var(--zoho-blue-dark);
+  box-shadow: 0 2px 10px var(--zoho-blue-glow);
+}
+
+.btn-disconnect {
+  background: var(--surface-alt);
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border);
+  white-space: nowrap;
+  width: auto;
+  min-width: auto;
+  font-weight: 600;
+}
+
+.btn-disconnect:hover:not(:disabled) {
+  background: var(--zoho-red);
+  color: #fff;
+  border-color: var(--zoho-red);
+}
+
+.repo-status {
+  margin-top: 8px;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  min-height: 1.1em;
+}
+
+.repo-status.error {
+  color: var(--zoho-red);
+}
+
+.repo-status.success {
+  color: var(--zoho-green);
+}
+
+/* ─── Queue Banner ─── */
+.queue-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--zoho-orange-light);
+  border: 1px solid rgba(244, 132, 30, 0.2);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  font-size: 0.82rem;
+  color: #7c2d12;
+  font-weight: 500;
+}
+
+.queue-banner.hidden {
+  display: none;
+}
+
+.spinner-small {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(244, 132, 30, 0.25);
+  border-top-color: var(--zoho-orange);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  flex-shrink: 0;
+}
+
+/* ─── Tabs ─── */
+.tabs {
+  display: flex;
+  gap: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  overflow: hidden;
+}
+
+.tab {
+  flex: 1;
+  padding: 12px 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  border-bottom: 2.5px solid transparent;
+}
+
+.tab:hover {
+  color: var(--text);
+  background: var(--surface-alt);
+}
+
+.tab.active {
+  color: var(--zoho-blue);
+  background: var(--surface);
+  border-bottom-color: var(--zoho-blue);
+}
+
+/* ─── Panels ─── */
+.tab-panels {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  padding: 26px 24px;
+  position: relative;
+  box-shadow: var(--shadow-sm);
+}
+
+.panel {
+  display: none;
+}
+
+.panel.active {
+  display: block;
+  animation: fadeIn 0.2s ease;
+}
+
+/* Overlay when not connected */
+.panels-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  z-index: 10;
+}
+
+.panels-overlay.hidden {
+  display: none;
+}
+
+.panels-overlay p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 20px;
+  font-weight: 500;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.panel h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+  color: var(--text);
+}
+
+.panel-desc {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+/* ─── Form Fields ─── */
+.field {
+  margin-bottom: 16px;
+}
+
+.field label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  margin-bottom: 5px;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  padding: 9px 13px;
+  border-radius: var(--radius);
+  border: 1.5px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text);
+  font-size: 0.88rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--zoho-blue);
+  box-shadow: 0 0 0 3px var(--zoho-blue-glow);
+}
+
+.field input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.field select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%235c6678' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+/* ─── Field Hint ─── */
+.field-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.73rem;
+  color: var(--text-muted);
+}
+
+.field-hint.loading {
+  color: var(--zoho-orange);
+}
+
+.field-hint.error {
+  color: var(--zoho-red);
+}
+
+/* ─── Searchable Select ─── */
+.search-select {
+  position: relative;
+  width: 100%;
+}
+
+.search-select .ss-input {
+  width: 100%;
+  padding: 9px 32px 9px 13px;
+  border-radius: var(--radius);
+  border: 1.5px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text);
+  font-size: 0.88rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%235c6678' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.search-select .ss-input:focus {
+  outline: none;
+  border-color: var(--zoho-blue);
+  box-shadow: 0 0 0 3px var(--zoho-blue-glow);
+}
+
+.search-select .ss-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.search-select .ss-input.has-value {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.search-select .ss-dropdown {
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 50;
+  box-shadow: var(--shadow-lg);
+}
+
+.search-select .ss-dropdown.hidden {
+  display: none;
+}
+
+.search-select .ss-list {
+  padding: 3px 0;
+}
+
+.search-select .ss-item {
+  padding: 8px 13px;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.search-select .ss-item:hover,
+.search-select .ss-item.highlighted {
+  background: var(--zoho-blue-light);
+  color: var(--zoho-blue);
+}
+
+.search-select .ss-item.selected {
+  background: var(--zoho-blue-light);
+  color: var(--zoho-blue);
+  font-weight: 600;
+}
+
+.search-select .ss-empty {
+  padding: 12px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.search-select .ss-dropdown::-webkit-scrollbar {
+  width: 5px;
+}
+
+.search-select .ss-dropdown::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.search-select .ss-dropdown::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+/* ─── Buttons ─── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  margin-top: 6px;
+  font-family: var(--font);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--zoho-blue);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--zoho-blue-dark);
+  box-shadow: 0 3px 12px var(--zoho-blue-glow);
+}
+
+.btn-warning {
+  background: var(--zoho-orange);
+  color: #fff;
+}
+
+.btn-warning:hover:not(:disabled) {
+  background: #d97316;
+  box-shadow: 0 3px 12px rgba(244, 132, 30, 0.25);
+}
+
+.btn-secondary {
+  background: var(--surface-alt);
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--border);
+  color: var(--text);
+}
+
+/* ─── Spinner ─── */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2.5px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+.spinner.hidden {
+  display: none;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Result / Toast ─── */
+.result {
+  margin-top: 20px;
+}
+
+.result-box {
+  padding: 13px 16px;
+  border-radius: var(--radius);
+  font-size: 0.84rem;
+  line-height: 1.6;
+  word-break: break-word;
+  animation: fadeIn 0.2s ease;
+}
+
+.result-box.success {
+  background: var(--zoho-green-light);
+  border: 1px solid rgba(46, 125, 50, 0.18);
+  color: #1b5e20;
+}
+
+.result-box.error {
+  background: var(--zoho-red-light);
+  border: 1px solid rgba(229, 57, 53, 0.18);
+  color: #b71c1c;
+}
+
+.result-box strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.86rem;
+}
+
+.result-box pre {
+  margin-top: 8px;
+  padding: 9px 11px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.73rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  color: var(--text-secondary);
+  font-family: var(--mono);
+  max-height: 170px;
+  overflow-y: auto;
+}
+
+/* ─── Modal ─── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.15s ease;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px 24px 20px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal h3 {
+  font-size: 1rem;
+  margin-bottom: 8px;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.modal p {
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin-bottom: 20px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.modal-actions .btn {
+  width: auto;
+  padding: 9px 20px;
+  font-size: 0.82rem;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 480px) {
+  .container {
+    padding: 0 12px 32px;
+  }
+
+  header {
+    margin: 0 -12px 20px;
+    padding: 28px 12px 24px;
+  }
+
+  .tabs {
+    flex-direction: column;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .tab {
+    padding: 10px;
+    border-bottom: none;
+    border-left: 2.5px solid transparent;
+  }
+
+  .tab.active {
+    border-left-color: var(--zoho-blue);
+    border-bottom-color: transparent;
+  }
+
+  .tab-panels {
+    padding: 20px 16px;
+  }
+
+  .repo-bar-row {
+    flex-direction: column;
+  }
+
+  .btn-connect,
+  .btn-disconnect {
+    width: 100%;
+  }
+}

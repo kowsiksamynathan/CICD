@@ -1,0 +1,13 @@
+{
+  "name": "git-npm-tool",
+  "version": "1.0.0",
+  "description": "Full-stack web application for Git and NPM automation",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "express-session": "^1.19.0"
+  }
+}

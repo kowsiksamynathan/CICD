@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — Canvas Automation</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="https://www.zohowebstatic.com/favicon.ico">
+  <style>
+    body {
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+    .login-header {
+      background: var(--canvas-gradient);
+      padding: 32px 28px 26px;
+      text-align: center;
+    }
+    .login-header h1 {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .login-header p {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.7);
+    }
+    .login-body {
+      padding: 28px 28px 24px;
+    }
+    .login-body .field {
+      margin-bottom: 18px;
+    }
+    .login-body .field label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      display: block;
+    }
+    .login-body .field input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      background: var(--surface-alt);
+      color: var(--text);
+      font-size: 0.9rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .login-body .field input:focus {
+      outline: none;
+      border-color: var(--zoho-blue);
+      box-shadow: 0 0 0 3px var(--zoho-blue-glow);
+    }
+    .login-error {
+      display: none;
+      margin-bottom: 16px;
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      background: var(--zoho-red-light);
+      border: 1px solid rgba(229, 57, 53, 0.18);
+      color: #b71c1c;
+      font-size: 0.82rem;
+    }
+    .login-error.visible {
+      display: block;
+    }
+    .login-btn {
+      width: 100%;
+      padding: 11px;
+      border: none;
+      border-radius: var(--radius);
+      background: var(--zoho-blue);
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: var(--font);
+    }
+    .login-btn:hover:not(:disabled) {
+      background: var(--zoho-blue-dark);
+    }
+    .login-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .login-btn .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2.5px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: none;
+    }
+    .login-btn.loading .spinner { display: block; }
+    .login-btn.loading .btn-label { display: none; }
+    .login-footer {
+      padding: 0 28px 20px;
+      text-align: center;
+      font-size: 0.73rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="login-header">
+      <h1>🚀 Canvas Automation</h1>
+      <p>Sign in with your Git credentials</p>
+    </div>
+    <div class="login-body">
+      <div class="login-error" id="login-error"></div>
+      <form id="login-form" autocomplete="off">
+        <div class="field">
+          <label for="username">Git Username</label>
+          <input type="text" id="username" placeholder="e.g. john.doe" required autofocus />
+        </div>
+        <div class="field">
+          <label for="password">Git Password / Token</label>
+          <input type="password" id="password" placeholder="Your password or access token" required />
+        </div>
+        <button type="submit" class="login-btn" id="login-btn">
+          <span class="btn-label">Sign In</span>
+          <span class="spinner"></span>
+        </button>
+      </form>
+    </div>
+    <div class="login-footer">
+      Your credentials are used to authenticate Git operations and are stored only in session memory.
+    </div>
+  </div>
+
+  <script>
+    // Check if already authenticated
+    (async () => {
+      try {
+        const res = await fetch('/api/auth-status');
+        const data = await res.json();
+        if (data.authenticated) {
+          window.location.href = '/';
+        }
+      } catch (_) {}
+    })();
+
+    const form = document.getElementById('login-form');
+    const btn = document.getElementById('login-btn');
+    const errorBox = document.getElementById('login-error');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorBox.classList.remove('visible');
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          window.location.href = '/';
+        } else {
+          errorBox.textContent = data.message || 'Login failed.';
+          errorBox.classList.add('visible');
+        }
+      } catch (err) {
+        errorBox.textContent = 'Network error. Is the server running?';
+        errorBox.classList.add('visible');
+      } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Git & NPM Tool</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="https://www.zohowebstatic.com/favicon.ico">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-row">
+        <div>
+          <h1>🚀 Canvas Automation 🚀</h1>
+          <p class="subtitle">Manage versions, cherry-picks, and publishing from one place</p>
+        </div>
+        <div class="header-user" id="header-user">
+          <span class="user-name" id="user-name"></span>
+          <button class="logout-btn" id="btn-logout" title="Sign out">Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Repo Connection Bar -->
+    <div class="repo-bar">
+      <div class="repo-bar-header">
+        <label for="repoUrl">🔗 Git Repository URL</label>
+        <span class="status-badge disconnected" id="status-badge">Disconnected</span>
+      </div>
+      <div class="repo-bar-row">
+        <select id="repoUrl">
+          <option value="https://zrepository.zohocorpcloud.in/zohocorp/ZohoCanvas/crm-canvas.git" selected>crm-canvas</option>
+        </select>
+        <button class="btn btn-connect" id="btn-connect">
+          <span class="btn-text">Connect</span>
+          <span class="spinner hidden"></span>
+        </button>
+        <button class="btn btn-disconnect hidden" id="btn-disconnect">Disconnect</button>
+      </div>
+      <div class="repo-status" id="repo-status"></div>
+    </div>
+
+    <!-- Queue Indicator -->
+    <div class="queue-banner hidden" id="queue-banner">
+      <span class="spinner-small"></span>
+      <span id="queue-text">An operation is in progress. Your request is queued…</span>
+    </div>
+
+    <!-- Tabs -->
+    <nav class="tabs">
+      <button class="tab active" data-tab="increment">Increment Version</button>
+      <button class="tab" data-tab="cherry-pick">Cherry Pick</button>
+      <button class="tab" data-tab="publish">Publish</button>
+    </nav>
+
+    <!-- Tab Panels -->
+    <div class="tab-panels" id="tab-panels">
+
+      <!-- Overlay when not connected -->
+      <div class="panels-overlay" id="panels-overlay">
+        <p>⬆️ Connect a repository above to get started</p>
+      </div>
+
+      <!-- 1. Increment Version -->
+      <div class="panel active" id="panel-increment">
+        <h2>Increment Version</h2>
+        <p class="panel-desc">Select a branch, make the required package changes, then commit and push.</p>
+        <form id="form-increment" autocomplete="off">
+          <div class="field">
+            <label>Branch Name</label>
+            <div class="search-select" id="ss-inc-branch">
+              <input type="text" class="ss-input" placeholder="Search branches…" autocomplete="off" />
+              <input type="hidden" class="ss-value" name="inc-branch" />
+              <div class="ss-dropdown hidden">
+                <div class="ss-list"></div>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="inc-version">Current Version</label>
+            <input type="text" id="inc-version" placeholder="Select a branch to load version" disabled />
+            <span class="field-hint" id="inc-version-hint"></span>
+          </div>
+          <div class="field">
+            <label for="inc-message">Commit Message</label>
+            <input type="text" id="inc-message" placeholder="e.g. chore: bump version" required />
+          </div>
+          <button type="submit" class="btn btn-primary" id="btn-increment">
+            <span class="btn-text">Commit &amp; Push</span>
+            <span class="spinner hidden"></span>
+          </button>
+        </form>
+        <div class="result" id="result-increment"></div>
+      </div>
+
+      <!-- 2. Cherry Pick -->
+      <div class="panel" id="panel-cherry-pick">
+        <h2>Cherry Pick</h2>
+        <p class="panel-desc">Select a branch, cherry-pick a commit, then commit and push.</p>
+        <form id="form-cherry-pick" autocomplete="off">
+          <div class="field">
+            <label>Target Branch Name</label>
+            <div class="search-select" id="ss-cp-branch">
+              <input type="text" class="ss-input" placeholder="Search branches…" autocomplete="off" />
+              <input type="hidden" class="ss-value" name="cp-branch" />
+              <div class="ss-dropdown hidden">
+                <div class="ss-list"></div>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="cp-commit">Commit ID (SHA)</label>
+            <input type="text" id="cp-commit" placeholder="e.g. a1b2c3d4" required />
+          </div>
+          <button type="submit" class="btn btn-primary" id="btn-cherry-pick">
+            <span class="btn-text">Cherry Pick &amp; Push</span>
+            <span class="spinner hidden"></span>
+          </button>
+        </form>
+        <div class="result" id="result-cherry-pick"></div>
+      </div>
+
+      <!-- 3. Publish -->
+      <div class="panel" id="panel-publish">
+        <h2>Publish</h2>
+        <p class="panel-desc">Checkout a branch and run npm publish.</p>
+        <form id="form-publish" autocomplete="off">
+          <div class="field">
+            <label>Branch Name</label>
+            <div class="search-select" id="ss-pub-branch">
+              <input type="text" class="ss-input" placeholder="Search branches…" autocomplete="off" />
+              <input type="hidden" class="ss-value" name="pub-branch" />
+              <div class="ss-dropdown hidden">
+                <div class="ss-list"></div>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-warning" id="btn-publish">
+            <span class="btn-text">Publish to NPM</span>
+            <span class="spinner hidden"></span>
+          </button>
+        </form>
+        <div class="result" id="result-publish"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal-overlay hidden" id="confirm-modal">
+    <div class="modal">
+      <h3>⚠️ Confirm Publish</h3>
+      <p>Are you sure you want to publish this package to the NPM registry? This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="modal-cancel">Cancel</button>
+        <button class="btn btn-warning" id="modal-confirm">Yes, Publish</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
