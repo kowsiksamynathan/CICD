@@ -303,21 +303,52 @@ class SearchSelect {
 // ─── Version field references ───
 const incVersionInput = document.getElementById('inc-version');
 const incVersionHint = document.getElementById('inc-version-hint');
+const incCheckinId = document.getElementById('inc-checkin-id');
+const incMessage = document.getElementById('inc-message');
+let incOriginalVersion = '';
+
+// ─── Auto-generate commit message ───
+function updateCommitMessage() {
+  const checkinId = incCheckinId.value.trim();
+  const newVersion = incVersionInput.value.trim();
+  let msg = '';
+  if (checkinId) {
+    msg += `checkin id : ${checkinId}`;
+  }
+  if (incOriginalVersion && newVersion) {
+    if (msg) msg += ' , ';
+    msg += `version update from ${incOriginalVersion} to ${newVersion}`;
+  }
+  incMessage.value = msg;
+}
+
+// Only allow numbers in checkin ID
+incCheckinId.addEventListener('input', () => {
+  incCheckinId.value = incCheckinId.value.replace(/[^0-9]/g, '');
+  updateCommitMessage();
+});
+
+incVersionInput.addEventListener('input', () => {
+  updateCommitMessage();
+});
 
 // ─── Fetch version when branch is selected ───
 async function onIncBranchSelected(branch) {
   incVersionInput.value = '';
   incVersionInput.disabled = true;
+  incOriginalVersion = '';
   incVersionHint.textContent = 'Loading version…';
   incVersionHint.className = 'field-hint loading';
 
   try {
     const data = await apiCall('/api/get-version', { branch });
     if (data.success && data.version) {
+      incOriginalVersion = data.version;
       incVersionInput.value = data.version;
       incVersionInput.disabled = false;
-      incVersionHint.textContent = `Current version on ${branch}. Edit to set new version.`;
+      incVersionHint.textContent = `Actual version: ${data.version}`;
       incVersionHint.className = 'field-hint';
+      updateCommitMessage();
     } else {
       incVersionInput.value = '';
       incVersionInput.disabled = false;
@@ -598,7 +629,8 @@ formPublish.addEventListener('submit', (e) => {
     setLoading(btn, true);
 
     try {
-      const data = await apiCall('/api/publish', { branch });
+      const tagging = document.getElementById('pub-tagging').value;
+      const data = await apiCall('/api/publish', { branch, tagging });
       showResult(resultPublish, data.success, data.message, data.details);
     } catch (err) {
       showResult(resultPublish, false, 'Network error. Is the server running?');

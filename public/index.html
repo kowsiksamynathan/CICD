@@ -78,13 +78,17 @@
             </div>
           </div>
           <div class="field">
-            <label for="inc-version">Current Version</label>
+            <label for="inc-version">New Version</label>
             <input type="text" id="inc-version" placeholder="Select a branch to load version" disabled />
             <span class="field-hint" id="inc-version-hint"></span>
           </div>
           <div class="field">
+            <label for="inc-checkin-id">Checkin ID</label>
+            <input type="text" id="inc-checkin-id" placeholder="e.g. 8128318283" pattern="[0-9]*" inputmode="numeric" required />
+          </div>
+          <div class="field">
             <label for="inc-message">Commit Message</label>
-            <input type="text" id="inc-message" placeholder="e.g. chore: bump version" required />
+            <input type="text" id="inc-message" placeholder="Auto-generated from checkin ID and version" />
           </div>
           <button type="submit" class="btn btn-primary" id="btn-increment">
             <span class="btn-text">Commit &amp; Push</span>
@@ -135,6 +139,13 @@
                 <div class="ss-list"></div>
               </div>
             </div>
+          </div>
+          <div class="field">
+            <label for="pub-tagging">Tagging Needed</label>
+            <select id="pub-tagging">
+              <option value="y">Yes</option>
+              <option value="n" selected>No</option>
+            </select>
           </div>
           <button type="submit" class="btn btn-warning" id="btn-publish">
             <span class="btn-text">Publish to NPM</span>

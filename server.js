@@ -68,13 +68,8 @@ const operationMutex = new Mutex();
 // ──────────────────────────────────────────────
 function runCommand(command, cwd, extraEnv = {}) {
   return new Promise((resolve, reject) => {
-    const env = {
-      ...process.env,
-      PATH: `/Users/kowsik-8285/.nvm/versions/node/v16.20.2/bin:${process.env.PATH}`,
-      GIT_TERMINAL_PROMPT: '0', // prevent interactive prompts
-      ...extraEnv,
-    };
-    exec(command, { cwd, timeout: 300000, maxBuffer: 1024 * 1024 * 10, env }, (error, stdout, stderr) => {
+    
+    exec(command, { cwd, timeout: 300000, maxBuffer: 1024 * 1024 * 10 }, (error, stdout, stderr) => {
       if (error) {
         reject({ message: error.message, stdout: stdout?.trim() || '', stderr: stderr?.trim() || '', code: error.code });
       } else {
@@ -97,6 +92,15 @@ function repoDirName(url) {
   const hash = crypto.createHash('sha256').update(url).digest('hex').slice(0, 12);
   const name = url.replace(/^https?:\/\//, '').replace(/\.git$/, '').replace(/[^a-zA-Z0-9]/g, '_');
   return `${name.slice(0, 40)}_${hash}`;
+}
+
+// ─── Operation Logger ───
+const LOG_FILE = path.join(__dirname, 'operations.log');
+
+function logOperation(user, operation, details) {
+  const timestamp = new Date().toISOString();
+  const line = `[${timestamp}] user=${user} op=${operation} ${JSON.stringify(details)}\n`;
+  fs.appendFileSync(LOG_FILE, line, 'utf-8');
 }
 
 function requireRepo(res) {
@@ -257,7 +261,7 @@ app.get('/api/branches', async (req, res) => {
 // POST /api/get-version
 app.post('/api/get-version', async (req, res) => {
   if (!requireRepo(res)) return;
-  const { branch } = req.body;
+  const { branch, tagging } = req.body;
   if (!branch) return res.status(400).json({ success: false, message: 'Branch name is required.' });
   try {
     const result = await runCommand(`git show origin/${branch}:webapps/crm-canvas-client/package.json`, currentRepo.localPath);
@@ -283,13 +287,13 @@ app.post('/api/increment-version', async (req, res) => {
   await operationMutex.acquire();
   try {
     const cwd = currentRepo.localPath;
-    await runCommand(`git remote set-url origin "${authUrl}"`, cwd);
+    const username = req.session.gitUser + "@zohocorp.com";
 
     await runCommands([
       `git checkout ${branch}`,
       `git reset --hard origin/${branch}`,
       `git clean -fd`,
-      `git pull origin ${branch}`,
+      `git pull "${authUrl}" ${branch}`,
     ], cwd);
 
     const pkgPath = path.join(cwd, '/webapps/crm-canvas-client/package.json');
@@ -302,12 +306,14 @@ app.post('/api/increment-version', async (req, res) => {
 
     await runCommands([
       `git add webapps/crm-canvas-client/package.json`,
-      `git commit -m "${message}" -n`,
-      `git push origin ${branch}`,
+      `git -c user.name="${username}" -c user.email="${username}" commit -m "${message}" -n`,
+      `git push "${authUrl}" ${branch}`,
     ], cwd);
 
+    logOperation(req.session.gitUser, 'increment-version', { branch, oldVersion, newVersion, message, status: 'success' });
     res.json({ success: true, message: `Version updated ${oldVersion} → ${newVersion} and pushed to ${branch}.`, details: [] });
   } catch (err) {
+    logOperation(req.session.gitUser, 'increment-version', { branch, newVersion, message, status: 'failed', error: err.stderr || err.message });
     res.status(500).json({ success: false, message: `Failed: ${err.stderr || err.message}`, details: err });
   } finally {
     operationMutex.release();
@@ -327,15 +333,18 @@ app.post('/api/cherry-pick', async (req, res) => {
   await operationMutex.acquire();
   try {
     const cwd = currentRepo.localPath;
-    await runCommand(`git remote set-url origin "${authUrl}"`, cwd);
+    const username = req.session.gitUser + "@zohocorp.com";
 
     const results = await runCommands([
       `git checkout ${branch}`,
-      `git pull origin ${branch}`,
-      `git cherry-pick ${commitId}`,
-      `git push origin ${branch}`,
+      `git reset --hard origin/${branch}`,
+      `git clean -fd`,
+      `git pull "${authUrl}" ${branch}`,
+      `git -c user.name="${username}" -c user.email="${username}" cherry-pick ${commitId}`,
+      `git push "${authUrl}" ${branch}`,
     ], cwd);
 
+    logOperation(req.session.gitUser, 'cherry-pick', { branch, commitId, status: 'success' });
     res.json({ success: true, message: `Commit ${commitId} cherry-picked onto ${branch} and pushed.`, details: results });
   } catch (err) {
     const cwd = currentRepo.localPath;
@@ -344,6 +353,7 @@ app.post('/api/cherry-pick', async (req, res) => {
       try { await runCommand('git cherry-pick --abort', cwd); } catch (_) {}
       errorMessage = `Cherry-pick conflict. Aborted. Details: ${errorMessage}`;
     }
+    logOperation(req.session.gitUser, 'cherry-pick', { branch, commitId, status: 'failed', error: errorMessage });
     res.status(500).json({ success: false, message: errorMessage, details: err });
   } finally {
     operationMutex.release();
@@ -353,7 +363,7 @@ app.post('/api/cherry-pick', async (req, res) => {
 // POST /api/publish
 app.post('/api/publish', async (req, res) => {
   if (!requireRepo(res)) return;
-  const { branch } = req.body;
+  const { branch, tagging } = req.body;
   if (!branch) return res.status(400).json({ success: false, message: 'Branch name is required.' });
 
   const authUrl = buildAuthUrl(currentRepo.url, req.session.gitUser, req.session.gitPass);
@@ -361,21 +371,76 @@ app.post('/api/publish', async (req, res) => {
   await operationMutex.acquire();
   try {
     const cwd = currentRepo.localPath;
-    await runCommand(`git remote set-url origin "${authUrl}"`, cwd);
 
     const gitResults = await runCommands([
       `git checkout ${branch}`,
       `git reset --hard origin/${branch}`,
       `git clean -fd`,
-      `git pull origin ${branch}`,
+      `git pull "${authUrl}" ${branch}`,
     ], cwd);
 
-    const publishResults = await runCommands([
-      `yes | npm publish --registry http://cm-npmregistry.csez.zohocorpin.com`
-    ], path.join(cwd, '/webapps/crm-canvas-client'));
+    const taggingAnswer = tagging === 'y' ? 'y' : 'n';
+    const publishDir = path.join(cwd,'/webapps/crm-canvas-client');
 
+    // Delete blog folder if present
+    const blogDir = path.join(publishDir, 'blog');
+    if (fs.existsSync(blogDir)) {
+      fs.rmSync(blogDir, { recursive: true, force: true });
+    }
+
+
+    const publishResult = await new Promise((resolve, reject) => {
+      const child = require('child_process').spawn('npm', ['publish', '--registry', 'http://cm-npmregistry.csez.zohocorpin.com  --tag beta '], {
+        cwd: publishDir,
+        shell: true,
+        stdio: ['pipe', 'pipe', 'pipe'],
+        timeout: 300000,
+      });
+      let stdout = '', stderr = '';
+      let promptsAnswered = 0;
+      child.stdout.on('data', (data) => {
+        const chunk = data.toString();
+        stdout += chunk;
+        // Detect prompts containing "branch?"
+        if (chunk.includes('branch?') && promptsAnswered < 2) {
+          promptsAnswered++;
+          if (promptsAnswered === 1) {
+            child.stdin.write('y\n');
+          } else if (promptsAnswered === 2) {
+            child.stdin.write(taggingAnswer + '\n');
+          }
+        }
+      });
+      child.stderr.on('data', (data) => {
+        const chunk = data.toString();
+        stderr += chunk;
+        // Some npm versions write prompts to stderr
+        if (chunk.includes('branch?') && promptsAnswered < 2) {
+          promptsAnswered++;
+          if (promptsAnswered === 1) {
+            child.stdin.write('y\n');
+          } else if (promptsAnswered === 2) {
+            child.stdin.write(taggingAnswer + '\n');
+          }
+        }
+      });
+      child.on('close', (code) => {
+        if (code === 0) resolve({ command: 'npm publish', stdout: stdout.trim(), stderr: stderr.trim() });
+        else reject({ message: `npm publish exited with code ${code}`, stdout: stdout.trim(), stderr: stderr.trim(), code });
+      });
+      child.on('error', (err) => reject({ message: err.message, stdout, stderr }));
+    });
+    const publishResults = [publishResult];
+
+
+
+
+
+
+    logOperation(req.session.gitUser, 'publish', { branch, tagging: taggingAnswer, status: 'success' });
     res.json({ success: true, message: `Published from branch ${branch}.`, details: [...gitResults, ...publishResults] });
   } catch (err) {
+    logOperation(req.session.gitUser, 'publish', { branch, tagging, status: 'failed', error: err.stderr || err.message });
     res.status(500).json({ success: false, message: `Publish failed: ${err.stderr || err.message}`, details: err });
   } finally {
     operationMutex.release();
